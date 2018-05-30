@@ -1,0 +1,142 @@
+---
+title: "ODE Example with Springs"
+author: "Graeme Keleher"
+date: "May 29, 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Intro
+This is a simple example using the deSolve package to model the motion of springs. The following webpage has an excellent walkthrough of the thoery
+
+http://tutorial.math.lamar.edu/Classes/DE/Vibrations.aspx
+
+
+#Load the deSolve Package 
+As well as ggplot2 for graphing
+```{r message=FALSE, warning=FALSE}
+library(deSolve)
+library(ggplot2)
+```
+
+
+#Free Undamped Vibration
+The simplest senario
+```{r}
+
+#Define the model parameters with k a the spring constant and m the mass
+parameters = c(k = 1,m = 1)
+
+#Define Model
+Spring <- function(t, States, parameters) {
+  with(as.list(c(States, parameters)),
+       list(c(v,
+              -(k/m)*y))
+  )
+}
+
+#start with spring in position 0 and -6 velocity
+States = c(y = 0, v = -6)
+
+#Define a vector specifying the time intervals
+times <- seq(0,40, by = 0.005)
+
+#Run Model
+result <- ode(y = States, times = times, func = Spring, parms = parameters)
+```
+
+
+```{r, echo = FALSE}
+result.df = as.data.frame(result)
+
+ggplot(result.df, aes(time, y )) + geom_line() + theme_bw() + labs(title = "Free, Undamped Vibrations", x = "Time (in seconds)", y = "Distance (in cm)")
+```
+
+
+#Free, Damped Vibrations
+We now add a damping constant g. 
+```{r}
+
+parameters = c(k = 1,m = 1, g = .2)
+
+Spring <- function(t, States, parameters) {
+  with(as.list(c(States, parameters)),
+       list(c(v,
+              -(k/m)*y) - (g/m)*v)
+  )
+}
+
+#start with spring in position 5 and zero velocity
+States = c(y = 5, v = 0)
+
+times <- seq(0,40, by = 0.005)
+
+damped <- ode(y = States, times = times, func = Spring, parms = parameters)
+```
+
+
+
+```{r, echo = FALSE}
+damped.df = as.data.frame(damped)
+
+ggplot(damped.df, aes(time, y )) + geom_line() + theme_bw() + labs(title = "Free, Damped Vibrations", x = "Time (in seconds)", y = "Distance (in cm)")
+```
+
+#Undamped, Forced Vibrations
+We add a forcing term which is a cosine function.
+```{r}
+parameters = c(k = 1,m = 1, g = 0, w = 1)
+
+Spring <- function(t, States, parameters) {
+  with(as.list(c(States, parameters)),
+       list(c(v,
+              -(k/m)*y) - (g/m)*v + cos(t*w))
+  )
+}
+
+#start with spring in position 5 and zero velocity
+States = c(y = 5, v = 0)
+
+times <- seq(0,40, by = 0.005)
+
+forced <- ode(y = States, times = times, func = Spring, parms = parameters)
+```
+
+
+
+```{r, echo = FALSE}
+forced.df = as.data.frame(forced)
+
+ggplot(forced.df, aes(time, y )) + geom_line() + theme_bw() + labs(title = "Forced, Undamped Vibrations", x = "Time (in seconds)", y = "Distance (in cm)")
+```
+#Damped, Forced Vibrations
+We add a forcing term which is a cosine function.
+```{r}
+parameters = c(k = 1,m = 1, g = .1, w = .5)
+
+Spring <- function(t, States, parameters) {
+  with(as.list(c(States, parameters)),
+       list(c(v,
+              -(k/m)*y) - (g/m)*v + cos(t*w))
+  )
+}
+
+#start with spring in position 5 and zero velocity
+States = c(y = 5, v = 0)
+
+times <- seq(0,100, by = 0.005)
+
+forced_damp <- ode(y = States, times = times, func = Spring, parms = parameters)
+```
+
+
+
+```{r, echo = FALSE}
+forced_damp.df = as.data.frame(forced_damp)
+
+ggplot(forced_damp.df, aes(time, y )) + geom_line() + theme_bw() + labs(title = "Forced, Damped Vibrations", x = "Time (in seconds)", y = "Distance (in cm)")
+```
+
